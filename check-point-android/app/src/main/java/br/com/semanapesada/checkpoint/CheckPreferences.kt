@@ -89,6 +89,10 @@ enum class PreferenceKey {
     LOCAL_NAME,
     LOCAL_ADDRESS,
 
+    RATIO,
+
     LAST_DISTANCE,
     IS_INSIDE;
+
+
 }

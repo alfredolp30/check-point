@@ -3,16 +3,25 @@ package br.com.semanapesada.checkpoint
 import android.location.Location
 import android.location.LocationListener
 import android.os.Bundle
+import android.util.Log
 import br.com.semanapesada.checkpoint.database.CheckPoint
+import br.com.semanapesada.checkpoint.event.MessageEvent
 import br.com.semanapesada.checkpoint.extension.datetimeKeyFormat
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 
 class CheckLocationListener : LocationListener {
+
+    val ratio: Float get() = AppCheck.prefs.getInt(PreferenceKey.RATIO.name, 10).toFloat()
+
     override fun onLocationChanged(location: Location?) {
-        if (CheckApp.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, true)) {
-            val latitude = Double.fromBits(CheckApp.prefs.getLong(PreferenceKey.LOCAL_LATITUDE.name, 0L))
-            val longitude = Double.fromBits(CheckApp.prefs.getLong(PreferenceKey.LOCAL_LONGITUDE.name, 0L))
+        Log.d("CHANGE_LONGITUDE", location?.longitude?.toString())
+        Log.d("CHANGE_LATITUDE", location?.latitude?.toString())
+
+        if (AppCheck.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, true)) {
+            val latitude = Double.fromBits(AppCheck.prefs.getLong(PreferenceKey.LOCAL_LATITUDE.name, 0L))
+            val longitude = Double.fromBits(AppCheck.prefs.getLong(PreferenceKey.LOCAL_LONGITUDE.name, 0L))
 
             val locationCheck = Location("")
             locationCheck.latitude = latitude
@@ -21,22 +30,22 @@ class CheckLocationListener : LocationListener {
 
             val meters = location?.distanceTo(locationCheck) ?: 0f
 
-            CheckApp.prefs.putInt(PreferenceKey.LAST_DISTANCE.name, meters.toRawBits())
+            AppCheck.prefs.putInt(PreferenceKey.LAST_DISTANCE.name, meters.toRawBits())
 
-            if (CheckApp.prefs.containsKey(PreferenceKey.IS_INSIDE.name)) {
-                val isInside = CheckApp.prefs.getBoolean(PreferenceKey.IS_INSIDE.name, true)
+            if (AppCheck.prefs.containsKey(PreferenceKey.IS_INSIDE.name)) {
+                val isInside = AppCheck.prefs.getBoolean(PreferenceKey.IS_INSIDE.name, true)
 
-                if (isInside && meters > 10f) {
-                    CheckApp.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, false)
+                if (isInside && meters > ratio) {
+                    AppCheck.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, false)
 
                     saveCheckPoint(false)
-                } else if (!isInside && meters <= 10f) {
-                    CheckApp.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, true)
+                } else if (!isInside && meters <= ratio) {
+                    AppCheck.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, true)
 
                     saveCheckPoint(true)
                 }
             } else {
-                CheckApp.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, meters < 10f)
+                AppCheck.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, meters < ratio)
             }
         }
     }
@@ -45,7 +54,10 @@ class CheckLocationListener : LocationListener {
         val datetime = GregorianCalendar().datetimeKeyFormat()
 
         if (datetime.isNotBlank()) {
-            CheckApp.db.pointDao().add(CheckPoint(datetime, entering))
+            val checkPoint = CheckPoint(datetime, entering)
+            checkPoint.uid = AppCheck.db.pointDao().add(checkPoint) ?: 0
+
+            EventBus.getDefault().post(MessageEvent.NewCheckPoint(checkPoint))
         }
     }
 

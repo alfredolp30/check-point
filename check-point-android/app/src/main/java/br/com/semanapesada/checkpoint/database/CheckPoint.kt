@@ -6,7 +6,7 @@ import android.arch.persistence.room.PrimaryKey
 @Entity
 class CheckPoint {
     @PrimaryKey(autoGenerate = true)
-    var uid: Int? = null
+    var uid: Long? = null
     var datetime: String? = null
     var entering: Boolean = false
 

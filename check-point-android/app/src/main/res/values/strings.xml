@@ -1,13 +1,14 @@
 <resources>
-    <string name="app_name">CheckPoint</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
+    <string name="app_name">Semana Pesada</string>
+    <string name="title_home">Local</string>
+    <string name="title_dashboard">Pontos</string>
     <string name="title_notifications">Notifications</string>
 
     <string name="local">Local: %1$s</string>
     <string name="longitude">Longitude: %1$s</string>
     <string name="latitude">Latitude: %1$s</string>
-    <string name="ratio">Raio: %1$s</string>
+    <string name="ratio">Raio: %1$d metros</string>
     <string name="choose_location">Escolher Local</string>
     <string name="selected_location">Local selecionado.</string>
+    <string name="change_ratio">Modificar Raio</string>
 </resources>

@@ -10,10 +10,10 @@ import br.com.semanapesada.checkpoint.database.CheckPoint
 
 
 class CheckPointViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val txtDatetime = view.findViewById<TextView>(R.id.txtDatetime)
+    val txtDatetime : TextView? = view.findViewById(R.id.txtDatetime)
 }
 
-class CheckPointAdapter(private val checkPoints : List<CheckPoint>) : RecyclerView.Adapter<CheckPointViewHolder>() {
+class CheckPointAdapter(val checkPoints : MutableList<CheckPoint>) : RecyclerView.Adapter<CheckPointViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CheckPointViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.cell_check_point, parent, false)
         return CheckPointViewHolder(view)
@@ -22,7 +22,8 @@ class CheckPointAdapter(private val checkPoints : List<CheckPoint>) : RecyclerVi
     override fun getItemCount(): Int = checkPoints.size
 
     override fun onBindViewHolder(holder: CheckPointViewHolder, position: Int) {
-        holder.txtDatetime.text = checkPoints[position].uid?.toString() + " >>> " + checkPoints[position].datetime
+        val checkPoint = checkPoints[position]
+        holder.txtDatetime?.text = checkPoint.uid?.toString() + " >>> " + checkPoint.datetime + " >>> " + if (checkPoint.entering) "Entrando" else "Saindo"
     }
 
 }

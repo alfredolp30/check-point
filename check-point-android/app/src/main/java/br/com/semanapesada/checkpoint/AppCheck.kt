@@ -6,7 +6,7 @@ import android.arch.persistence.room.Room
 
 
 
-class CheckApp : Application() {
+class AppCheck : Application() {
 
     companion object {
         lateinit var prefs : CheckPreferences
