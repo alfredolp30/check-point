@@ -4,11 +4,11 @@ import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 
 @Entity
-class Point {
+class CheckPoint {
     @PrimaryKey(autoGenerate = true)
-    private val uid: Int? = null
-    private var datetime: String? = null
-    private var entering: Boolean = false
+    var uid: Int? = null
+    var datetime: String? = null
+    var entering: Boolean = false
 
 
     constructor(datetime: String, entering: Boolean) {

@@ -2,17 +2,11 @@ package br.com.semanapesada.checkpoint
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.content.SharedPreferences
+import android.text.BoringLayout
 
-/**
- * Created by Alfredo L. Porfirio on 08/05/17.
- * Copyright Universo Online 2018. All rights reserved.
- */
-class CheckPreferences(private val mContext: Context) {
 
-    private val sharedPrefer: SharedPreferences
-        get() = mContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-
+class CheckPreferences(mContext: Context) {
+    private val sharedPrefer = mContext.getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 
     fun putString(key: String, value: String) {
         val editor = sharedPrefer.edit()
@@ -25,6 +19,7 @@ class CheckPreferences(private val mContext: Context) {
         editor.putInt(key, value)
         editor.apply()
     }
+
 
     fun putLong(key: String, value: Long) {
         val editor = sharedPrefer.edit()
@@ -70,7 +65,30 @@ class CheckPreferences(private val mContext: Context) {
         return prefs.getStringSet(key, defValue) ?: defValue
     }
 
+    fun containsKey(key: String) : Boolean {
+        val prefs = sharedPrefer
+        return prefs.contains(key)
+    }
+
+    fun removeKey(key: String) {
+        val editor = sharedPrefer.edit()
+        editor.remove(key)
+        editor.apply()
+    }
+
     companion object {
         const val PREFS_NAME = "checkPrefs"
     }
+}
+
+
+enum class PreferenceKey {
+    HAS_LOCAL,
+    LOCAL_LATITUDE,
+    LOCAL_LONGITUDE,
+    LOCAL_NAME,
+    LOCAL_ADDRESS,
+
+    LAST_DISTANCE,
+    IS_INSIDE;
 }

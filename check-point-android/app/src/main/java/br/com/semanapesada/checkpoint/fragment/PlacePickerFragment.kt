@@ -1,6 +1,7 @@
 package br.com.semanapesada.checkpoint.fragment
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -12,10 +13,11 @@ import kotlinx.android.synthetic.main.fragment_place_picker.*
 import com.google.android.gms.location.places.ui.PlacePicker
 import java.lang.Exception
 import android.widget.Toast
-import com.google.android.gms.location.places.Place
 import android.content.Intent
-
-
+import android.location.LocationManager
+import br.com.semanapesada.checkpoint.CheckApp
+import br.com.semanapesada.checkpoint.PreferenceKey
+import br.com.semanapesada.checkpoint.extension.showToast
 
 
 class PlacePickerFragment : Fragment() {
@@ -31,12 +33,16 @@ class PlacePickerFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        button.setOnClickListener {
+        btnPicker.setOnClickListener {
             placePicker()
+        }
+
+        if (CheckApp.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, true)) {
+            txtLocal.text = getString(R.string.local, CheckApp.prefs.getString(PreferenceKey.LOCAL_ADDRESS.name))
         }
     }
 
-    fun placePicker() {
+    private fun placePicker() {
         val builder = PlacePicker.IntentBuilder()
 
         try {
@@ -50,8 +56,17 @@ class PlacePickerFragment : Fragment() {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
                 val place = PlacePicker.getPlace(context, data)
-                val toastMsg = String.format("Place: %s", place.name)
-                Toast.makeText(context, toastMsg, Toast.LENGTH_LONG).show()
+
+                context?.showToast(getString(R.string.selected_location), Toast.LENGTH_LONG)
+
+                CheckApp.prefs.putBoolean(PreferenceKey.HAS_LOCAL.name, true)
+                CheckApp.prefs.putLong(PreferenceKey.LOCAL_LATITUDE.name, place.latLng.latitude.toRawBits())
+                CheckApp.prefs.putLong(PreferenceKey.LOCAL_LONGITUDE.name, place.latLng.longitude.toRawBits())
+                CheckApp.prefs.putString(PreferenceKey.LOCAL_NAME.name, place.name.toString())
+                CheckApp.prefs.putString(PreferenceKey.LOCAL_ADDRESS.name, place.address.toString())
+                CheckApp.prefs.removeKey(PreferenceKey.IS_INSIDE.name)
+
+                txtLocal.text = getString(R.string.local, place.address)
             }
         }
     }
