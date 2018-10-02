@@ -8,4 +8,5 @@ import br.com.semanapesada.checkpoint.database.CheckPoint
  */
 class MessageEvent {
     class NewCheckPoint(val checkPoint: CheckPoint)
+    class ChangeDistance(val meters: Float)
 }

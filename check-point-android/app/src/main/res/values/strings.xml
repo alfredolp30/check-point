@@ -11,4 +11,5 @@
     <string name="choose_location">Escolher Local</string>
     <string name="selected_location">Local selecionado.</string>
     <string name="change_ratio">Modificar Raio</string>
+    <string name="distance">Distância: %1$s metros</string>
 </resources>

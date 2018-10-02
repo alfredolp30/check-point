@@ -13,13 +13,17 @@ import java.util.*
 
 class CheckLocationListener : LocationListener {
 
-    val ratio: Float get() = AppCheck.prefs.getInt(PreferenceKey.RATIO.name, 10).toFloat()
+    companion object {
+        const val RATIO_DEFAULT = 10
+    }
+
+    val ratio: Float get() = AppCheck.prefs.getInt(PreferenceKey.RATIO.name, RATIO_DEFAULT).toFloat()
 
     override fun onLocationChanged(location: Location?) {
         Log.d("CHANGE_LONGITUDE", location?.longitude?.toString())
         Log.d("CHANGE_LATITUDE", location?.latitude?.toString())
 
-        if (AppCheck.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, true)) {
+        if (AppCheck.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, false)) {
             val latitude = Double.fromBits(AppCheck.prefs.getLong(PreferenceKey.LOCAL_LATITUDE.name, 0L))
             val longitude = Double.fromBits(AppCheck.prefs.getLong(PreferenceKey.LOCAL_LONGITUDE.name, 0L))
 
@@ -31,6 +35,7 @@ class CheckLocationListener : LocationListener {
             val meters = location?.distanceTo(locationCheck) ?: 0f
 
             AppCheck.prefs.putInt(PreferenceKey.LAST_DISTANCE.name, meters.toRawBits())
+            EventBus.getDefault().post(MessageEvent.ChangeDistance(meters))
 
             if (AppCheck.prefs.containsKey(PreferenceKey.IS_INSIDE.name)) {
                 val isInside = AppCheck.prefs.getBoolean(PreferenceKey.IS_INSIDE.name, true)
@@ -45,6 +50,7 @@ class CheckLocationListener : LocationListener {
                     saveCheckPoint(true)
                 }
             } else {
+                Log.d("IS_INSIDE", "not contains")
                 AppCheck.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, meters < ratio)
             }
         }

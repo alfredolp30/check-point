@@ -1,6 +1,7 @@
 package br.com.semanapesada.checkpoint.fragment
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -20,11 +21,17 @@ import br.com.semanapesada.checkpoint.extension.showToast
 import android.support.v7.app.AlertDialog
 import android.widget.SeekBar
 import android.widget.TextView
+import br.com.semanapesada.checkpoint.CheckLocationListener.Companion.RATIO_DEFAULT
+import br.com.semanapesada.checkpoint.event.MessageEvent
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import java.lang.ref.WeakReference
 
 
 class PlacePickerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
-    private var txtDialogRation: TextView? = null
+    private var weakTxtDialogRation: WeakReference<TextView>? = null
 
     companion object {
         const val PLACE_PICKER_REQUEST = 1
@@ -41,15 +48,31 @@ class PlacePickerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
             placePicker()
         }
 
-        if (AppCheck.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, true)) {
+        if (AppCheck.prefs.getBoolean(PreferenceKey.HAS_LOCAL.name, false)) {
             txtLocal.text = getString(R.string.local, AppCheck.prefs.getString(PreferenceKey.LOCAL_ADDRESS.name))
         }
 
-        txtRatio.text = getString(R.string.ratio, AppCheck.prefs.getInt(PreferenceKey.RATIO.name, 10))
+        val meters = AppCheck.prefs.getInt(PreferenceKey.RATIO.name, RATIO_DEFAULT)
+        txtRatio.text = getString(R.string.ratio, meters)
 
         btnRatio.setOnClickListener {
             createDialogRatio()
         }
+
+        val distance = Float.fromBits(AppCheck.prefs.getInt(PreferenceKey.LAST_DISTANCE.name, 0))
+        txtDistance.text = getString(R.string.distance, distance.toString())
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        EventBus.getDefault().unregister(this)
     }
 
     private fun placePicker() {
@@ -98,10 +121,12 @@ class PlacePickerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
             val seekBarRation = (dialog as? AlertDialog)?.findViewById<SeekBar>(R.id.seekBarRatio)
 
             val meters = 5 + (seekBarRation?.progress ?: 0) * 5
+
             AppCheck.prefs.putInt(PreferenceKey.RATIO.name, meters)
+            AppCheck.prefs.removeKey(PreferenceKey.IS_INSIDE.name)
+            AppCheck.prefs.removeKey(PreferenceKey.LAST_DISTANCE.name)
 
             txtRatio.text = getString(R.string.ratio, meters)
-            AppCheck.prefs.removeKey(PreferenceKey.IS_INSIDE.name)
         }
 
         dialogBuilder.setNegativeButton("Cancelar", null)
@@ -109,14 +134,14 @@ class PlacePickerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         val dialog = dialogBuilder.create()
 
         val seekBarRatio: SeekBar? = view.findViewById(R.id.seekBarRatio)
-        txtDialogRation = view.findViewById(R.id.txtDialogRatio)
+        weakTxtDialogRation = WeakReference(view.findViewById(R.id.txtDialogRatio))
 
         seekBarRatio?.setOnSeekBarChangeListener(this)
 
-        val meters = AppCheck.prefs.getInt(PreferenceKey.RATIO.name, 10)
+        val meters = AppCheck.prefs.getInt(PreferenceKey.RATIO.name, RATIO_DEFAULT)
         val progress = (meters/5) - 1
 
-        txtDialogRation?.text = getString(R.string.ratio, meters)
+        weakTxtDialogRation?.get()?.text = getString(R.string.ratio, meters)
         seekBarRatio?.progress = progress
 
         if (activity?.isDestroyed == false && activity?.isFinishing == false) {
@@ -126,7 +151,7 @@ class PlacePickerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         val meters = 5 + progress * 5
-        txtDialogRation?.text = getString(R.string.ratio, meters)
+        weakTxtDialogRation?.get()?.text = getString(R.string.ratio, meters)
     }
 
     override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -135,6 +160,12 @@ class PlacePickerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     override fun onStopTrackingTouch(p0: SeekBar?) {
 
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMessageEvent(changeDistance: MessageEvent.ChangeDistance) {
+        txtDistance.text = getString(R.string.distance, changeDistance.meters.toString())
     }
 
 }
