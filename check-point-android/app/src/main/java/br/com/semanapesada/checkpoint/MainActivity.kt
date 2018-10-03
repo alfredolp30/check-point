@@ -11,6 +11,9 @@ import br.com.semanapesada.checkpoint.fragment.PlacePickerFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import android.location.LocationManager
 import android.support.v4.content.ContextCompat
+import android.location.Criteria
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -70,7 +73,16 @@ class MainActivity : AppCompatActivity() {
                     android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE_LOCATION)
         } else {
             val locationManager = getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-            locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 10f, listener)
+
+            val fineCriteria = Criteria()
+
+            fineCriteria.accuracy = Criteria.ACCURACY_FINE
+            fineCriteria.horizontalAccuracy = Criteria.ACCURACY_HIGH
+            fineCriteria.bearingAccuracy = Criteria.ACCURACY_HIGH
+            fineCriteria.isBearingRequired = true
+
+            locationManager?.requestLocationUpdates(locationManager.getBestProvider(fineCriteria, true),
+                    20000, 20f, listener)
         }
     }
 }

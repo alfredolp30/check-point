@@ -23,7 +23,8 @@ class CheckPointAdapter(val checkPoints : MutableList<CheckPoint>) : RecyclerVie
 
     override fun onBindViewHolder(holder: CheckPointViewHolder, position: Int) {
         val checkPoint = checkPoints[position]
-        holder.txtDatetime?.text = checkPoint.uid?.toString() + " >>> " + checkPoint.datetime + " >>> " + if (checkPoint.entering) "Entrando" else "Saindo"
+        holder.txtDatetime?.text = checkPoint.uid?.toString() + " >>> " + checkPoint.datetime +
+                " >>> Acc: ${checkPoint.accuracy}% >>>" + if (checkPoint.entering) "Entrando" else "Saindo"
     }
 
 }

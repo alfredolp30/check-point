@@ -33,6 +33,7 @@ class CheckLocationListener : LocationListener {
             locationCheck.altitude = location?.altitude ?: 0.0
 
             val meters = location?.distanceTo(locationCheck) ?: 0f
+            val accuracy = location?.accuracy ?: 0f
 
             AppCheck.prefs.putInt(PreferenceKey.LAST_DISTANCE.name, meters.toRawBits())
             EventBus.getDefault().post(MessageEvent.ChangeDistance(meters))
@@ -43,11 +44,11 @@ class CheckLocationListener : LocationListener {
                 if (isInside && meters > ratio) {
                     AppCheck.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, false)
 
-                    saveCheckPoint(false)
+                    saveCheckPoint(false, accuracy)
                 } else if (!isInside && meters <= ratio) {
                     AppCheck.prefs.putBoolean(PreferenceKey.IS_INSIDE.name, true)
 
-                    saveCheckPoint(true)
+                    saveCheckPoint(true, accuracy)
                 }
             } else {
                 Log.d("IS_INSIDE", "not contains")
@@ -56,11 +57,11 @@ class CheckLocationListener : LocationListener {
         }
     }
 
-    private fun saveCheckPoint(entering: Boolean) {
+    private fun saveCheckPoint(entering: Boolean, accuracy: Float) {
         val datetime = GregorianCalendar().datetimeKeyFormat()
 
         if (datetime.isNotBlank()) {
-            val checkPoint = CheckPoint(datetime, entering)
+            val checkPoint = CheckPoint(datetime, entering, accuracy)
             checkPoint.uid = AppCheck.db.pointDao().add(checkPoint) ?: 0
 
             EventBus.getDefault().post(MessageEvent.NewCheckPoint(checkPoint))

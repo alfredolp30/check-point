@@ -9,10 +9,11 @@ class CheckPoint {
     var uid: Long? = null
     var datetime: String? = null
     var entering: Boolean = false
+    var accuracy: Float = 0f
 
-
-    constructor(datetime: String, entering: Boolean) {
+    constructor(datetime: String, entering: Boolean, accuracy: Float) {
         this.datetime = datetime
         this.entering = entering
+        this.accuracy = accuracy
     }
 }
