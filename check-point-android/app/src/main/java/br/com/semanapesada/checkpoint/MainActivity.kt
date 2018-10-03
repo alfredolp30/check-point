@@ -74,15 +74,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             val locationManager = getSystemService(Context.LOCATION_SERVICE) as? LocationManager
 
-            val fineCriteria = Criteria()
 
-            fineCriteria.accuracy = Criteria.ACCURACY_FINE
-            fineCriteria.horizontalAccuracy = Criteria.ACCURACY_HIGH
-            fineCriteria.bearingAccuracy = Criteria.ACCURACY_HIGH
-            fineCriteria.isBearingRequired = true
-
-            locationManager?.requestLocationUpdates(locationManager.getBestProvider(fineCriteria, true),
-                    20000, 20f, listener)
+            locationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 20000, 20f, listener)
         }
     }
 }
